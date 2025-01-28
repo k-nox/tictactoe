@@ -80,17 +80,29 @@ func (g Game) String() string {
 
 func (g Game) Play() {
 	// game loop: until there is a winner OR all cells have been played, keep taking turns
+	maxTurns := len(g.board) * len(g.board[0])
+	isPlayer1 := true
 	fmt.Println(g)
-	g.player1.takeTurn(g)
-	fmt.Println(g)
-	g.player1.takeTurn(g)
-	fmt.Println(g)
-	g.player1.takeTurn(g)
-	fmt.Println(g)
+	for i := 0; i < maxTurns; i++ {
+		activePlayer := g.player1
+		if !isPlayer1 {
+			activePlayer = g.player2
+		}
+
+		move := activePlayer.takeTurn(g)
+		g.board[move.row][move.col] = move.mark
+		fmt.Println(g)
+		if g.isWon(move) {
+			fmt.Printf("Congrats to the winner %s!\n", activePlayer.name)
+			return
+		}
+
+		isPlayer1 = !isPlayer1
+	}
+	fmt.Println("It's a draw!")
 }
 
-func (p player) takeTurn(g Game) {
-	fmt.Printf("%s's turn, pick a cell: ", p.name)
+func (p player) takeTurn(g Game) move {
 	var (
 		row int
 		col int
@@ -141,12 +153,60 @@ func (p player) takeTurn(g Game) {
 		return true
 	})
 
-	g.board[row][col-1] = p.mark
+	return move{
+		row:  row,
+		col:  col - 1,
+		mark: p.mark,
+	}
 }
 
-// func (g Game) isWon() bool {
-//
-// }
+func (g Game) isWon(lastMove move) bool {
+	boardSize := len(g.board)
+	// check horizontal
+	for col := 0; col < boardSize; col++ {
+		if g.board[lastMove.row][col] != lastMove.mark {
+			break
+		}
+		if col == boardSize-1 {
+			return true
+		}
+	}
+
+	// check vertical
+	for row := 0; row < boardSize; row++ {
+		if g.board[row][lastMove.col] != lastMove.mark {
+			break
+		}
+		if row == boardSize-1 {
+			return true
+		}
+	}
+
+	// check diagnoal
+	if lastMove.row == lastMove.col {
+		for i := 0; i < boardSize; i++ {
+			if g.board[i][i] != lastMove.mark {
+				break
+			}
+			if i == boardSize-1 {
+				return true
+			}
+		}
+	}
+
+	// check anti-diagonal
+	if lastMove.col+lastMove.row == boardSize-1 {
+		for i := 0; i < boardSize; i++ {
+			if g.board[i][boardSize-1-i] != lastMove.mark {
+				break
+			}
+			if i == boardSize-1 {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 func (g Game) playerInput(prompt string, validator func(s string) bool) string {
 	fmt.Print(prompt)
