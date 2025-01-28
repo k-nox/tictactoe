@@ -84,10 +84,9 @@ func (g Game) String() string {
 }
 
 func (g Game) Play() {
-	// game loop: until there is a winner OR all cells have been played, keep taking turns
+	g.instructions()
 	maxTurns := len(g.board) * len(g.board[0])
 	isPlayer1 := true
-	fmt.Println(g)
 	for i := 0; i < maxTurns; i++ {
 		activePlayer := g.player1
 		if !isPlayer1 {
@@ -165,6 +164,15 @@ func (p player) takeTurn(g Game) move {
 	}
 }
 
+func (g Game) instructions() {
+	fmt.Println(yellow("Welcome to TicTacToe ") + g.player1.color(g.player1.name) + yellow(" and ") + g.player2.color(g.player2.name) + yellow("!"))
+	fmt.Println(yellow("This is what the board looks like:"))
+	fmt.Println(g)
+	fmt.Println(yellow("To take your turn, you'll input the cell you want to play."))
+	fmt.Println(yellow("For example, to play the top left cell, you can input 'a1', 'A1', '1a', or '1A'."))
+	fmt.Println(yellow("Have fun!"))
+}
+
 func (g Game) isWon(lastMove move) bool {
 	boardSize := len(g.board)
 	// check horizontal
@@ -225,9 +233,9 @@ func (g Game) playerInput(prompt string, validator func(s string) bool) string {
 }
 
 func (g Game) getMarkForPlayer(defaultMark string, player player) string {
-	mark := g.playerInput(player.color(fmt.Sprintf("Hit enter to use %s or type a custom mark now", defaultMark)), func(s string) bool {
+	mark := g.playerInput(player.color(fmt.Sprintf("Hit enter to use %s or type a custom mark now: ", defaultMark)), func(s string) bool {
 		if len(s) > 1 {
-			fmt.Print(red("Please input only one character"))
+			fmt.Print(red("Please input only one character: "))
 			return false
 		}
 		return true
